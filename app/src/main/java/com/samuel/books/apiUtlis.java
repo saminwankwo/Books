@@ -1,5 +1,7 @@
 package com.samuel.books;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -32,9 +34,25 @@ public class apiUtlis {
 	public static String getJson(URL url) throws IOException {
 		
 		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-		InputStream stream = connection.getInputStream();
-		Scanner scanner = new Scanner(stream);
-		scanner.useDelimiter("\\A");
+		
+		try {
+			InputStream stream = connection.getInputStream();
+			Scanner scanner = new Scanner(stream);
+			scanner.useDelimiter("\\A");
+			boolean hasData = scanner.hasNext();
+			
+			if (hasData) {
+				return scanner.next();
+			} else {
+				return null;
+			}
+		} catch (Exception e) {
+			Log.d("Error", e.toString());
+			return null;
+		} finally {
+			connection.disconnect();
+		}
+		
 		
 	}
 }
