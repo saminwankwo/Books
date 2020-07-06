@@ -75,7 +75,7 @@ public class apiUtlis {
 		final String ITEMS = "items";
 		final String VOLUMEINFO = "volumeInfo";
 		
-		ArrayList<Book> books = null;
+		ArrayList<Book> books = new ArrayList<Book>();
 		try {
 			JSONObject jsonBooks = new JSONObject(json);
 			JSONArray arrayBooks = jsonBooks.getJSONArray(ITEMS);
@@ -91,6 +91,7 @@ public class apiUtlis {
 				for (int j = 0; j < authorNum; j++) {
 					authors[j] = volumeInfoJSON.getJSONArray(AUTHORS).get(j).toString();
 				}
+				
 				Book book = new Book(
 						bookJSON.getString(ID),
 						volumeInfoJSON.getString(TITLE),
@@ -100,6 +101,7 @@ public class apiUtlis {
 						volumeInfoJSON.getString(PUBLISHED_DATE));
 				books.add(book);
 			}
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
