@@ -1,6 +1,8 @@
 package com.samuel.books;
 
 import android.content.Context;
+import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,7 +41,7 @@ public class BooksAdapter extends RecyclerView.Adapter<BooksAdapter.BookViewHold
 		return books.size();
 	}
 	
-	public class BookViewHolder extends RecyclerView.ViewHolder {
+	public class BookViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 		TextView tvTitle;
 		TextView tvAuthors;
 		TextView tvDate;
@@ -51,6 +53,7 @@ public class BooksAdapter extends RecyclerView.Adapter<BooksAdapter.BookViewHold
 			tvAuthors = (TextView) itemView.findViewById(R.id.tvAuthors);
 			tvDate = (TextView) itemView.findViewById(R.id.tvPublishedDate);
 			tvPublisher = (TextView) itemView.findViewById(R.id.tvPublisher);
+			itemView.setOnClickListener(this);
 		}
 		
 		public void Bind(Book book) {
@@ -70,5 +73,15 @@ public class BooksAdapter extends RecyclerView.Adapter<BooksAdapter.BookViewHold
 			tvPublisher.setText(book.publisher);
 		}
 		
+		@Override
+		public void onClick(View view) {
+			int position = getAdapterPosition();
+			Log.d("Click", String.valueOf(position));
+			//gets the book from the arrayList
+			Book selectedBook = books.get(position);
+			Intent intent = new Intent(view.getContext(), bookDetails.class);
+			intent.putExtra("Book", selectedBook);
+			view.getContext().startActivity(intent);
+		}
 	}
 }

@@ -1,6 +1,7 @@
 package com.samuel.books;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.MenuItemCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -8,14 +9,17 @@ import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.SearchView;
 import android.widget.TextView;
 
 import java.net.URL;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
 	private ProgressBar mLoadingProgress;
 	private RecyclerView rvBooks;
 	
@@ -39,6 +43,34 @@ public class MainActivity extends AppCompatActivity {
 				new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
 		rvBooks.setLayoutManager(booksLayoutManager);
 		
+	}
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.book_list_menu, menu);
+		final MenuItem searchItem = menu.findItem(R.id.action_search);
+		final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+		searchView.setOnQueryTextListener(this);
+		return true;
+	}
+	
+	@Override
+	public boolean onQueryTextSubmit(String query) {
+		try {
+			
+			URL bookUrl = apiUtlis.buildUrl(query);
+			new BookQueryTasks().execute(bookUrl);
+			
+			
+		} catch (Exception e) {
+			Log.d("error", e.getMessage());
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean onQueryTextChange(String query) {
+		return false;
 	}
 	
 	public class BookQueryTasks extends AsyncTask<URL, Void, String> {
