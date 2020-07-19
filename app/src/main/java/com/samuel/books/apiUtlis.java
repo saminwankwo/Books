@@ -4,26 +4,26 @@ import android.net.Uri;
 import android.util.Log;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class apiUtlis {
+	private apiUtlis() {
+	}
+	
 	public static final String BASE_API_URL =
 			"https://www.googleapis.com/books/v1/volumes";
-	
 	public static final String QUERY_PARAMETER_KEY = "q";
 	public static final String KEY = "key";
 	public static final String API_KEY = "AIzaSyCQVemOXIF101YPXuKWjeJDpkZmlnMDBQY";
-	
-	private apiUtlis() {
-	}
+
 	
 	public static URL buildUrl(String title) {
 		
@@ -34,8 +34,7 @@ public class apiUtlis {
 						  .build();
 		try {
 			url = new URL(uri.toString());
-			
-		} catch (MalformedURLException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return url;
@@ -50,7 +49,6 @@ public class apiUtlis {
 			Scanner scanner = new Scanner(stream);
 			scanner.useDelimiter("\\A");
 			boolean hasData = scanner.hasNext();
-			
 			if (hasData) {
 				return scanner.next();
 			} else {
@@ -62,7 +60,6 @@ public class apiUtlis {
 		} finally {
 			connection.disconnect();
 		}
-		
 	}
 	
 	public static ArrayList<Book> getBooksFromJson(String json) {
@@ -87,11 +84,9 @@ public class apiUtlis {
 						bookJSON.getJSONObject(VOLUMEINFO);
 				int authorNum = volumeInfoJSON.getJSONArray(AUTHORS).length();
 				String[] authors = new String[authorNum];
-				
 				for (int j = 0; j < authorNum; j++) {
 					authors[j] = volumeInfoJSON.getJSONArray(AUTHORS).get(j).toString();
 				}
-				
 				Book book = new Book(
 						bookJSON.getString(ID),
 						volumeInfoJSON.getString(TITLE),
@@ -100,13 +95,16 @@ public class apiUtlis {
 						volumeInfoJSON.getString(PUBLISHER),
 						volumeInfoJSON.getString(PUBLISHED_DATE));
 				books.add(book);
+				
 			}
 			
-		} catch (Exception e) {
+		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 		
+		
 		return books;
+	}
 	}
 }
 

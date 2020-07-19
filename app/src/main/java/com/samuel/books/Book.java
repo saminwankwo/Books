@@ -8,6 +8,8 @@ import android.widget.ImageView;
 import androidx.databinding.BindingAdapter;
 import androidx.databinding.ObservableField;
 
+import com.squareup.picasso.Picasso;
+
 public class Book implements Parcelable {
 	public static final Creator<Book> CREATOR = new Creator<Book>() {
 		@Override
