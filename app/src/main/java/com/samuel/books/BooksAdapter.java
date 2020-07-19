@@ -16,24 +16,26 @@ import java.util.ArrayList;
 public class BooksAdapter extends RecyclerView.Adapter<BooksAdapter.BookViewHolder> {
 	
 	ArrayList<Book> books;
-	
 	public BooksAdapter(ArrayList<Book> books) {
 		this.books = books;
 	}
-	
-	
 	@Override
-	public BookViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+	public BookViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 		Context context = parent.getContext();
 		View itemView = LayoutInflater.from(context)
 								.inflate(R.layout.book_list_item, parent, false);
+		
+		
 		return new BookViewHolder(itemView);
+		
+		
 	}
 	
 	@Override
-	public void onBindViewHolder(@NonNull BookViewHolder holder, int position) {
+	public void onBindViewHolder(BookViewHolder holder, int position) {
 		Book book = books.get(position);
-		holder.Bind(book);
+		holder.bind(book);
+		
 	}
 	
 	@Override
@@ -41,37 +43,41 @@ public class BooksAdapter extends RecyclerView.Adapter<BooksAdapter.BookViewHold
 		return books.size();
 	}
 	
+	
 	public class BookViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+		
 		TextView tvTitle;
 		TextView tvAuthors;
 		TextView tvDate;
 		TextView tvPublisher;
 		
-		public BookViewHolder(@NonNull View itemView) {
+		public BookViewHolder(View itemView) {
 			super(itemView);
 			tvTitle = (TextView) itemView.findViewById(R.id.tvTitle);
 			tvAuthors = (TextView) itemView.findViewById(R.id.tvAuthors);
 			tvDate = (TextView) itemView.findViewById(R.id.tvPublishedDate);
 			tvPublisher = (TextView) itemView.findViewById(R.id.tvPublisher);
 			itemView.setOnClickListener(this);
+			
 		}
 		
-		public void Bind(Book book) {
+		public void bind(Book book) {
 			tvTitle.setText(book.title);
 			String authors = "";
-			
 			int i = 0;
-			for (String author : book.authors) {
-				authors += author;
-				i++;
-				if (i < book.authors.length) {
-					authors += ", ";
-				}
-			}
-			tvAuthors.setText(authors);
-			tvDate.setText(book.publishedDate);
-			tvPublisher.setText(book.publisher);
+            /*for (String author:book.authors.get()) {
+                authors+=author;
+                i++;
+                if(i<book.authors.get().length) {
+                    authors+=", ";
+                }
+            }*/
+			
+			tvAuthors.setText(book.authors.get());
+			tvDate.setText(book.publishedDate.get());
+			tvPublisher.setText(book.publisher.get());
 		}
+		
 		
 		@Override
 		public void onClick(View view) {

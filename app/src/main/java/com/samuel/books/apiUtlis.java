@@ -4,6 +4,7 @@ import android.net.Uri;
 import android.util.Log;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -15,12 +16,16 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class apiUtlis {
+	public static final String TITLE = "intitle:";
+	
 	public static final String BASE_API_URL =
 			"https://www.googleapis.com/books/v1/volumes";
-	
 	public static final String QUERY_PARAMETER_KEY = "q";
 	public static final String KEY = "key";
 	public static final String API_KEY = "AIzaSyCQVemOXIF101YPXuKWjeJDpkZmlnMDBQY";
+	public static final String AUTHOR = "inauthor:";
+	public static final String PUBLISHER = "inpublisher:";
+	public static final String ISBN = "isbn:";
 	
 	private apiUtlis() {
 	}
@@ -34,12 +39,35 @@ public class apiUtlis {
 						  .build();
 		try {
 			url = new URL(uri.toString());
-			
-		} catch (MalformedURLException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return url;
 	}
+	
+	public static URL buildUrl(String title, String author, String publisher, String isbn) {
+		URL url = null;
+		StringBuilder sb = new StringBuilder();
+		
+		if (!title.isEmpty()) sb.append(TITLE + title + "+");
+		if (!author.isEmpty()) sb.append(AUTHOR + author + "+");
+		if (!publisher.isEmpty()) sb.append(PUBLISHER + publisher + "+");
+		if (!isbn.isEmpty()) sb.append(ISBN + isbn + "+");
+		//removes the last character
+		sb.setLength(sb.length() - 1);
+		String query = sb.toString();
+		Uri uri = Uri.parse(BASE_API_URL).buildUpon()
+						  .appendQueryParameter(QUERY_PARAMETER_KEY, query)
+						  .appendQueryParameter(KEY, API_KEY)
+						  .build();
+		try {
+			url = new URL(uri.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return url;
+	}
+	
 	
 	public static String getJson(URL url) throws IOException {
 		
@@ -50,7 +78,6 @@ public class apiUtlis {
 			Scanner scanner = new Scanner(stream);
 			scanner.useDelimiter("\\A");
 			boolean hasData = scanner.hasNext();
-			
 			if (hasData) {
 				return scanner.next();
 			} else {
@@ -62,7 +89,6 @@ public class apiUtlis {
 		} finally {
 			connection.disconnect();
 		}
-		
 	}
 	
 	public static ArrayList<Book> getBooksFromJson(String json) {
@@ -74,38 +100,49 @@ public class apiUtlis {
 		final String PUBLISHED_DATE = "publishedDate";
 		final String ITEMS = "items";
 		final String VOLUMEINFO = "volumeInfo";
+		final String DESCRIPTION = "description";
+		final String IMAGEINFO = "imageLinks";
+		final String THUMBNAIL = "thumbnail";
 		
 		ArrayList<Book> books = new ArrayList<Book>();
 		try {
 			JSONObject jsonBooks = new JSONObject(json);
 			JSONArray arrayBooks = jsonBooks.getJSONArray(ITEMS);
 			int numberOfBooks = arrayBooks.length();
-			
 			for (int i = 0; i < numberOfBooks; i++) {
 				JSONObject bookJSON = arrayBooks.getJSONObject(i);
 				JSONObject volumeInfoJSON =
 						bookJSON.getJSONObject(VOLUMEINFO);
-				int authorNum = volumeInfoJSON.getJSONArray(AUTHORS).length();
-				String[] authors = new String[authorNum];
+				JSONObject imageLinksJSON = null;
+				//qui problema
+				if (volumeInfoJSON.has(IMAGEINFO)) {
+					imageLinksJSON = volumeInfoJSON.getJSONObject(IMAGEINFO);
+				}
+				int authorNum;
+				try {
+					authorNum = volumeInfoJSON.getJSONArray(AUTHORS).length();
+				} catch (Exception e) {
+					authorNum = 0;
+				}
 				
+				String[] authors = new String[authorNum];
 				for (int j = 0; j < authorNum; j++) {
 					authors[j] = volumeInfoJSON.getJSONArray(AUTHORS).get(j).toString();
 				}
-				
 				Book book = new Book(
 						bookJSON.getString(ID),
 						volumeInfoJSON.getString(TITLE),
 						(volumeInfoJSON.isNull(SUBTITLE) ? "" : volumeInfoJSON.getString(SUBTITLE)),
 						authors,
-						volumeInfoJSON.getString(PUBLISHER),
-						volumeInfoJSON.getString(PUBLISHED_DATE));
+						(volumeInfoJSON.isNull(PUBLISHER) ? "" : volumeInfoJSON.getString(PUBLISHER)),
+						(volumeInfoJSON.isNull(PUBLISHED_DATE) ? "" : volumeInfoJSON.getString(PUBLISHED_DATE)),
+						(volumeInfoJSON.isNull(DESCRIPTION) ? "" : volumeInfoJSON.getString(DESCRIPTION)),
+						(imageLinksJSON == null) ? "" : imageLinksJSON.getString(THUMBNAIL));
 				books.add(book);
 			}
-			
-		} catch (Exception e) {
+		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-		
 		return books;
 	}
 }
