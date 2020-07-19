@@ -10,25 +10,20 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class apiUtlis {
-	public static final String TITLE = "intitle:";
+	private apiUtlis() {
+	}
 	
 	public static final String BASE_API_URL =
 			"https://www.googleapis.com/books/v1/volumes";
 	public static final String QUERY_PARAMETER_KEY = "q";
 	public static final String KEY = "key";
 	public static final String API_KEY = "AIzaSyCQVemOXIF101YPXuKWjeJDpkZmlnMDBQY";
-	public static final String AUTHOR = "inauthor:";
-	public static final String PUBLISHER = "inpublisher:";
-	public static final String ISBN = "isbn:";
-	
-	private apiUtlis() {
-	}
+
 	
 	public static URL buildUrl(String title) {
 		
@@ -44,30 +39,6 @@ public class apiUtlis {
 		}
 		return url;
 	}
-	
-	public static URL buildUrl(String title, String author, String publisher, String isbn) {
-		URL url = null;
-		StringBuilder sb = new StringBuilder();
-		
-		if (!title.isEmpty()) sb.append(TITLE + title + "+");
-		if (!author.isEmpty()) sb.append(AUTHOR + author + "+");
-		if (!publisher.isEmpty()) sb.append(PUBLISHER + publisher + "+");
-		if (!isbn.isEmpty()) sb.append(ISBN + isbn + "+");
-		//removes the last character
-		sb.setLength(sb.length() - 1);
-		String query = sb.toString();
-		Uri uri = Uri.parse(BASE_API_URL).buildUpon()
-						  .appendQueryParameter(QUERY_PARAMETER_KEY, query)
-						  .appendQueryParameter(KEY, API_KEY)
-						  .build();
-		try {
-			url = new URL(uri.toString());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return url;
-	}
-	
 	
 	public static String getJson(URL url) throws IOException {
 		
@@ -100,31 +71,18 @@ public class apiUtlis {
 		final String PUBLISHED_DATE = "publishedDate";
 		final String ITEMS = "items";
 		final String VOLUMEINFO = "volumeInfo";
-		final String DESCRIPTION = "description";
-		final String IMAGEINFO = "imageLinks";
-		final String THUMBNAIL = "thumbnail";
 		
 		ArrayList<Book> books = new ArrayList<Book>();
 		try {
 			JSONObject jsonBooks = new JSONObject(json);
 			JSONArray arrayBooks = jsonBooks.getJSONArray(ITEMS);
 			int numberOfBooks = arrayBooks.length();
+			
 			for (int i = 0; i < numberOfBooks; i++) {
 				JSONObject bookJSON = arrayBooks.getJSONObject(i);
 				JSONObject volumeInfoJSON =
 						bookJSON.getJSONObject(VOLUMEINFO);
-				JSONObject imageLinksJSON = null;
-				//qui problema
-				if (volumeInfoJSON.has(IMAGEINFO)) {
-					imageLinksJSON = volumeInfoJSON.getJSONObject(IMAGEINFO);
-				}
-				int authorNum;
-				try {
-					authorNum = volumeInfoJSON.getJSONArray(AUTHORS).length();
-				} catch (Exception e) {
-					authorNum = 0;
-				}
-				
+				int authorNum = volumeInfoJSON.getJSONArray(AUTHORS).length();
 				String[] authors = new String[authorNum];
 				for (int j = 0; j < authorNum; j++) {
 					authors[j] = volumeInfoJSON.getJSONArray(AUTHORS).get(j).toString();
@@ -134,16 +92,19 @@ public class apiUtlis {
 						volumeInfoJSON.getString(TITLE),
 						(volumeInfoJSON.isNull(SUBTITLE) ? "" : volumeInfoJSON.getString(SUBTITLE)),
 						authors,
-						(volumeInfoJSON.isNull(PUBLISHER) ? "" : volumeInfoJSON.getString(PUBLISHER)),
-						(volumeInfoJSON.isNull(PUBLISHED_DATE) ? "" : volumeInfoJSON.getString(PUBLISHED_DATE)),
-						(volumeInfoJSON.isNull(DESCRIPTION) ? "" : volumeInfoJSON.getString(DESCRIPTION)),
-						(imageLinksJSON == null) ? "" : imageLinksJSON.getString(THUMBNAIL));
+						volumeInfoJSON.getString(PUBLISHER),
+						volumeInfoJSON.getString(PUBLISHED_DATE));
 				books.add(book);
+				
 			}
+			
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
+		
+		
 		return books;
+	}
 	}
 }
 
